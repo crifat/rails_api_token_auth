@@ -30,8 +30,8 @@ RSpec.describe 'Authentication API', type: :request do
           sign_up user_props.except(:email), :unprocessable_entity
           payload = parsed_body
           expect(payload).to include('status'=>'error')
-          expect(payload).to include('data')
-          expect(payload).to include('errors')
+          expect_data
+          expect_errors
           expect(payload['errors']).to include('full_messages')
           expect(payload['errors']['full_messages']).to include(/Email/i)
           expect(payload['data']).to include('email'=>nil)
@@ -44,8 +44,8 @@ RSpec.describe 'Authentication API', type: :request do
           sign_up user_props
           payload = parsed_body
           expect(payload).to include('status'=>'error')
-          expect(payload).to include('data')
-          expect(payload).to include('errors')
+          expect_data
+          expect_errors
           expect(payload['errors']).to include('full_messages')
           expect(payload['errors']['full_messages']).to include(/Email has already been taken/i)
         end
@@ -54,15 +54,55 @@ RSpec.describe 'Authentication API', type: :request do
   end
 
   context 'anonymous user' do
-    it 'accesses public'
-    it 'fails to access protected resource'
+    let(:movie) { FactoryGirl.create(:movie) }
+    it 'accesses public' do
+      get movie_path(movie)
+      expect_status(:ok)
+    end
+    it 'fails to access protected resource' do
+      delete movie_path(movie)
+      expect_status(:unauthorized)
+      expect_errors
+      expect_error_to_have('sign in')
+    end
   end
 
   context 'login' do
+    let(:account) { sign_up user_props, :ok }
+
     context 'valid user login' do
-      it 'generates access token'
-      it 'grants access to resource'
-      it 'grants access to resources multiple time'
+      it 'generates access token' do
+        login account
+
+        expect(access_tokens).to include('uid')
+        expect(access_tokens['uid']).to eq(account[:uid])
+        expect(access_tokens).to include('access-token')
+        expect(access_tokens).to include('client')
+        expect(access_tokens['token-type']).to eq('Bearer')
+      end
+      it 'extracts access headers' do
+        login account
+
+        expect(access_tokens).to include('uid')
+        expect(access_tokens['uid']).to eq(account[:uid])
+        expect(access_tokens).to include('access-token')
+        expect(access_tokens).to include('client')
+        expect(access_tokens['token-type']).to eq('Bearer')
+      end
+      it 'grants access to resource' do
+        login account
+        movie = FactoryGirl.create(:movie)
+        get movie_path(movie, params: access_tokens)
+        expect_status(:ok)
+      end
+      it 'grants access to resources multiple time' do
+        login account
+        movie = FactoryGirl.create(:movie)
+        2.times do |i|
+          get movie_path(movie, params: access_tokens)
+          expect_status(:ok)
+        end
+      end
       it 'logout'
     end
 
