@@ -25,6 +25,9 @@
 #  tokens                 :json
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  super_admin            :boolean          default(FALSE)
+#  admin                  :boolean          default(FALSE)
+#  moderator              :boolean          default(FALSE)
 #
 
 class User < ActiveRecord::Base

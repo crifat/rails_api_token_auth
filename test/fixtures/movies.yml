@@ -1,0 +1,33 @@
+# == Schema Information
+#
+# Table name: movies
+#
+#  id           :integer          not null, primary key
+#  title        :string
+#  image        :string
+#  description  :text
+#  release_date :date
+#  showing      :boolean          default(FALSE)
+#  complete     :boolean          default(FALSE)
+#  upcoming     :boolean          default(TRUE)
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#
+
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  description: MyText
+  release_date: 2017-08-15
+  showing: false
+  complete: false
+  upcoming: false
+
+two:
+  title: MyString
+  description: MyText
+  release_date: 2017-08-15
+  showing: false
+  complete: false
+  upcoming: false
